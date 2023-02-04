@@ -130,24 +130,34 @@ microbenchmark(
     times = 1
 )
 
+# These results indicate that it's actually only 3x faster to use the vectorised
+# approach than using nested for loops. But what happens when you significantly
+# increase the number of strings & files?
+
+# But at this size, a single threaded functionalised approach is roughly the
+# same as the nested for loop
 microbenchmark(
     null <- map_dfr(xml_files, ~ possibly_getFullMatch(.x, target_strings)),
     nfl_res <- nestedForLoop(length(xml_files)),
     times = 1
 )
 
-
-target_strings2 <- rep(target_strings, 5)
-xml_files2 <- rep(xml_files, 5)
-
+# This is how many items there were to iterate in the first go (cross2
+# does the combinatorics for files/strings from two vectors)
 cross2(target_strings, xml_files) %>%
     rbindlist() %>%
     nrow()
+
+# Now let's try it with 5x the number of strings & files
+target_strings2 <- rep(target_strings, 5)
+xml_files2 <- rep(xml_files, 5)
+
+# The number of items to iterate over is now many times greater
 cross2(target_strings2, xml_files2) %>%
     rbindlist() %>%
     nrow()
 
-
+# Update the for loop to use these expanded variables
 nestedForLoop2 <- function(f_length) {
     # f_length <- length(xml_files2)
     for (i in 1:f_length) {
@@ -171,9 +181,13 @@ nestedForLoop2 <- function(f_length) {
     return(all_res)
 }
 
-
 microbenchmark(
     null <- future_map_dfr(xml_files2, ~ possibly_getFullMatch(.x, target_strings2)),
     nfl_res <- nestedForLoop2(length(xml_files2)),
     times = 1
 )
+
+# Notice how much simpler it was to update the functional approach? We only had
+# to change variables in TWO places (xml_files2 & target_strings2) whereas with
+# the for loop, we had to make alterations in a bunch of places. It's a lot
+# easier to mess things up that way.
