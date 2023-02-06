@@ -8,10 +8,10 @@ library(microbenchmark)
 here <- here()
 
 plan(multisession, workers = 8)
-plan(multisession, workers = 1, gc = TRUE)
-plan()
-furrr::workers()
-furrr::furrr_options()
+# plan(multisession, workers = 1, gc = TRUE)
+# plan()
+# furrr::workers()
+# furrr::furrr_options()
 
 
 # Load a list of files
@@ -79,16 +79,16 @@ nestedForLoop <- function(f_length) {
     return(all_res)
 }
 
-# Do the benchmarks
-microbenchmark(
-    forLoop(1),
-    nestedForLoop(1),
-    forLoop(10),
-    nfl_res <- nestedForLoop(10),
-    forLoop(length(xml_files)),
-    nfl_res <- nestedForLoop(length(xml_files)),
-    times = 1
-)
+# # Do the benchmarks
+# microbenchmark(
+#     forLoop(1),
+#     nestedForLoop(1),
+#     forLoop(10),
+#     nfl_res <- nestedForLoop(10),
+#     forLoop(length(xml_files)),
+#     nfl_res <- nestedForLoop(length(xml_files)),
+#     times = 1
+# )
 
 
 # Now let's try vectorise it.
@@ -120,15 +120,15 @@ possibly_getFullMatch <- possibly(getFullMatch, otherwise = NA)
 # options(datatable.prettyprint.char = 20000L)
 
 # Now do the same benchmarks as the for loops
-microbenchmark(
-    null <- map_df(xml_files[1], ~ possibly_getFullMatch(.x, target_strings)),
-    null <- future_map_dfr(xml_files[1], ~ possibly_getFullMatch(.x, target_strings)),
-    null <- map_df(xml_files[1:10], ~ possibly_getFullMatch(.x, target_strings)),
-    null <- future_map_dfr(xml_files[1:10], ~ possibly_getFullMatch(.x, target_strings)),
-    null <- map_df(xml_files, ~ possibly_getFullMatch(.x, target_strings)),
-    null <- future_map_dfr(xml_files, ~ possibly_getFullMatch(.x, target_strings)),
-    times = 1
-)
+# microbenchmark(
+#     null <- map_df(xml_files[1], ~ possibly_getFullMatch(.x, target_strings)),
+#     null <- future_map_dfr(xml_files[1], ~ possibly_getFullMatch(.x, target_strings)),
+#     null <- map_df(xml_files[1:10], ~ possibly_getFullMatch(.x, target_strings)),
+#     null <- future_map_dfr(xml_files[1:10], ~ possibly_getFullMatch(.x, target_strings)),
+#     null <- map_df(xml_files, ~ possibly_getFullMatch(.x, target_strings)),
+#     null <- future_map_dfr(xml_files, ~ possibly_getFullMatch(.x, target_strings)),
+#     times = 1
+# )
 
 # These results indicate that it's actually only 3x faster to use the vectorised
 # approach than using nested for loops. But what happens when you significantly
@@ -136,11 +136,11 @@ microbenchmark(
 
 # But at this size, a single threaded functionalised approach is roughly the
 # same as the nested for loop
-microbenchmark(
-    null <- map_dfr(xml_files, ~ possibly_getFullMatch(.x, target_strings)),
-    nfl_res <- nestedForLoop(length(xml_files)),
-    times = 1
-)
+# microbenchmark(
+#     null <- map_dfr(xml_files, ~ possibly_getFullMatch(.x, target_strings)),
+#     nfl_res <- nestedForLoop(length(xml_files)),
+#     times = 1
+# )
 
 # This is how many items there were to iterate in the first go (cross2
 # does the combinatorics for files/strings from two vectors)
@@ -149,8 +149,8 @@ cross2(target_strings, xml_files) %>%
     nrow()
 
 # Now let's try it with 5x the number of strings & files
-target_strings2 <- rep(target_strings, 5)
-xml_files2 <- rep(xml_files, 5)
+target_strings2 <- rep(target_strings, 4)
+xml_files2 <- rep(xml_files, 4)
 
 # The number of items to iterate over is now many times greater
 cross2(target_strings2, xml_files2) %>%
