@@ -94,8 +94,9 @@ nestedForLoop <- function(f_length) {
 # Now let's try vectorise it.
 
 # Set up main functions
-getStringMatches <- function(file_text, target_string) {
+getStringMatches <- function(file, target_string) {
     # target_string <- target_strings[1]
+    file_text <- getFullText(file)
     res <- stringdist::afind(file_text, target_string, window = nchar(target_string), method = "running_cosine")
     location <- res$location
     distance <- res$distance
@@ -108,9 +109,8 @@ getStringMatches <- function(file_text, target_string) {
 getFullMatch <- function(file, target_strings) {
     # file <- xml_files[1]
     # file_text <- fread(file, sep = NULL, header = FALSE)
-    file_text <- getFullText(file)
 
-    res <- rbindlist(future_map(target_strings, ~ getStringMatches(file_text, .x)))
+    res <- rbindlist(map(target_strings, ~ getStringMatches(file, .x)))
     res <- cbind(file, res)
     names(res) <- c("file", "target_string", "string_location", "string_distance", "matching_string", "context")
     return(res)
@@ -120,15 +120,15 @@ possibly_getFullMatch <- possibly(getFullMatch, otherwise = NA)
 # options(datatable.prettyprint.char = 20000L)
 
 # Now do the same benchmarks as the for loops
-# microbenchmark(
-#     null <- map_df(xml_files[1], ~ possibly_getFullMatch(.x, target_strings)),
-#     null <- future_map_dfr(xml_files[1], ~ possibly_getFullMatch(.x, target_strings)),
-#     null <- map_df(xml_files[1:10], ~ possibly_getFullMatch(.x, target_strings)),
-#     null <- future_map_dfr(xml_files[1:10], ~ possibly_getFullMatch(.x, target_strings)),
-#     null <- map_df(xml_files, ~ possibly_getFullMatch(.x, target_strings)),
-#     null <- future_map_dfr(xml_files, ~ possibly_getFullMatch(.x, target_strings)),
-#     times = 1
-# )
+microbenchmark(
+    null <- map_df(xml_files[1], ~ possibly_getFullMatch(.x, target_strings[1])),
+    null <- future_map_dfr(xml_files[1], ~ possibly_getFullMatch(.x, target_strings[1])),
+    null <- map_df(xml_files[1:10], ~ possibly_getFullMatch(.x, target_strings[1])),
+    null <- future_map_dfr(xml_files[1:10], ~ possibly_getFullMatch(.x, target_strings)),
+    null <- map_df(xml_files, ~ possibly_getFullMatch(.x, target_strings)),
+    null <- future_map_dfr(xml_files, ~ possibly_getFullMatch(.x, target_strings)),
+    times = 1
+)
 
 # These results indicate that it's actually only 3x faster to use the vectorised
 # approach than using nested for loops. But what happens when you significantly
