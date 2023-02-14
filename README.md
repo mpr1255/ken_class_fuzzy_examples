@@ -1,36 +1,45 @@
-# Steps to recreate the analysis
+# Examples of basic loop and function structures in `R`
 
-Go here:
-<https://www.aph.gov.au/Parliamentary_Business/Hansard/Hansreps_2011>
+This is a simple repository ('repo') meant to demonstrate the use of basic programming concepts for social science applications. 
 
-Then view source:
-view-source:<https://www.aph.gov.au/Parliamentary_Business/Hansard/Hansreps_2011>
+You can copy the repo to your computer using the command line, or downloading it as a zip file then unzipping it. 
 
-Observe the URLSs you want:
-bid=chamber/hansardr/25466/&sid=0000
-...
+Go to green `<> Code` button and either use the Github CLI command (if you have the `gh` command line interface installed), or click "Download ZIP." Then unzip it, and open the `.Rproj` file.
 
-Or wait -- just do some googling for
-"australian parliament hansard full text github"
+## 1. The corpus
 
-and find someone has already done it:
+We need a fairly vanilla dataset just to practice on -- ideally it will be a lot of litle files. How about the Australian Hansard? 
 
-<https://github.com/wragge/hansard-xml>
+We could try to gather it ourselves... or just google "australian parliament hansard full text github" (protip: adding 'github' to a search can sometimes turns up interesting & usefu public resources.)
 
-download all that.
-pop it in the /data directory.
+In this case: <https://github.com/wragge/hansard-xml>
 
-Now you've got a giant corpus of text to search through.
+So we download a bunch of those directories. Then pop them in the `./data` directory for this project.
 
-We'll search for something related to an accusation of lying, because I saw
-this:
+Now we've got a little corpus of text to search through.
 
+## 2. Strings to search for
+
+Just browsing the files, I saw this amusing invective: 
+
+```
 "You are trying to lie your way out of trouble again. You are a compulsive liar.
-You are the only liar who has been Prime Minister in the 1 7 years I have been
+You are the only liar who has been Prime Minister in the 17 years I have been
 here."
+```
 
-Just come up with a bunch of similar sentences:
+So let's try to come up with a fuzzy search algorithm to find sentences that include an accusation of lying.
 
+This is very rough-and-ready, but here are some potential sentences:
+
+```
 sentences <- c("You're a liar", "You're lying", "I've never met such a big liar
 in my life", "You are trying to lie your way out of
-trouble again", "You're a pathological liar", "liar, liar, pants on fire!")
+trouble again", "You're a pathological liar", "You're a compulsive liar", "liar, liar, pants on fire!")
+```
+
+(Note: the pedagogical value of this exercise is the use of for loops and functions to do things to, or find things in, files... If we *actually* wanted to find examples of politicians accusing other politicians of dishonesty and lying, there may be other and probably better ways of doing it.)
+
+## 3. Basic algorithms for fuzzy searching for those strings
+
+The remainder is in the file `fuzzymatch.R`, which is best worked through interactively. 

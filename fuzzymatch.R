@@ -84,9 +84,9 @@ nestedForLoop <- function(f_length) {
 #     forLoop(1),
 #     nestedForLoop(1),
 #     forLoop(10),
-#     nfl_res <- nestedForLoop(10),
+#     nestedForLoop(10),
 #     forLoop(length(xml_files)),
-#     nfl_res <- nestedForLoop(length(xml_files)),
+#     nestedForLoop(length(xml_files)),
 #     times = 1
 # )
 
@@ -130,6 +130,13 @@ microbenchmark(
     times = 1
 )
 
+first_benchmark <- bench::mark(
+    n1 <- nestedForLoop(length(xml_files)),
+    n2 <- map_df(xml_files, ~ possibly_getFullMatch(.x, target_strings)),
+    n3 <- future_map_dfr(xml_files, ~ possibly_getFullMatch(.x, target_strings)),
+    iterations = 1
+)
+
 # These results indicate that it's actually only 3x faster to use the vectorised
 # approach than using nested for loops. But what happens when you significantly
 # increase the number of strings & files?
@@ -149,8 +156,8 @@ cross2(target_strings, xml_files) %>%
     nrow()
 
 # Now let's try it with 5x the number of strings & files
-target_strings2 <- rep(target_strings, 4)
-xml_files2 <- rep(xml_files, 4)
+target_strings2 <- rep(target_strings, 2)
+xml_files2 <- rep(xml_files, 2)
 
 # The number of items to iterate over is now many times greater
 cross2(target_strings2, xml_files2) %>%
@@ -181,11 +188,48 @@ nestedForLoop2 <- function(f_length) {
     return(all_res)
 }
 
-microbenchmark(
-    null <- future_map_dfr(xml_files2, ~ possibly_getFullMatch(.x, target_strings2)),
+second_benchmark <- bench::mark(
+    null <- future_map(xml_files2, ~ possibly_getFullMatch(.x, target_strings2)),
     nfl_res <- nestedForLoop2(length(xml_files2)),
-    times = 1
+    check = FALSE,
+    iterations = 1
 )
+
+
+
+
+# Now let's try it with 5x the number of strings & files
+target_strings3 <- rep(target_strings, 3)
+xml_files3 <- rep(xml_files, 3)
+
+# The number of items to iterate over is now many times greater
+cross2(target_strings3, xml_files3) %>%
+    rbindlist() %>%
+    nrow()
+
+third_benchmark <- bench::mark(
+    null <- future_map(xml_files3, ~ possibly_getFullMatch(.x, target_strings3)),
+    nfl_res <- nestedForLoop2(length(xml_files3)),
+    iterations = 1
+)
+
+
+
+
+
+
+
+
+
+
+
+
+
+# microbenchmark(
+#     null <- future_map_dfr(xml_files2, ~ possibly_getFullMatch(.x, target_strings2)),
+#     nfl_res <- nestedForLoop2(length(xml_files2)),
+#     times = 1
+# )
 
 # Notice how much simpler it was to update the functional approach? We only had
 # to change variables in TWO places (xml_files2 & target_strings2) whereas with
